@@ -3,7 +3,7 @@ Word Guess App
 Author: Brian Turk  
 Date: 3/20/19
 
-## [Video Demonstration](https://photos.app.goo.gl/iC9DiyaYDGWFz32Y6)
+## [Video Demonstration](https://photos.app.goo.gl/9eZKYB1XLZjagCMF8)
 
 
 ## What this project does

@@ -1,18 +1,19 @@
-require("dotenv").config();
 let word = require("./word.js");
-let axios = require("axios");
+let randomWords = require('random-words');
 let inquirer = require("inquirer");
+
 
 var tries;
 var word2Guess;
+var startGame = true;
+var words;
 var lettersGuessed;
-var randomWordApiKey = process.env.RANDOM_WORD_KEY;
 
-LettersGuessed = function () {
+LettersGuessed = function() {
     this.letters = [],
-    this.didGuess = function (letter) {
+    this.didGuess = function(letter) {
         let alreadyGuessed = false
-        this.letters.forEach(function (guessed) {
+        this.letters.forEach(function(guessed){
             if (letter === guessed) {
                 alreadyGuessed = true;
             }
@@ -34,38 +35,19 @@ playGame(word2Guess)
 
 function playGame(word2Guess) {
 
-    axios
-        .get('https://random-word-api.herokuapp.com/word?key=' + randomWordApiKey + '&number=1')
-        .then(function (words) {
+    if (startGame) {
+        startGame = false
 
-            if (words.data[0] != "") {
-                word2Guess = new word.Word(words.data[0].toLowerCase());
+        //Get random word to use in game
+        words = randomWords({ min: 5, max: 20, exactly: 1 });
+        word2Guess = new word.Word(words[0].toLowerCase());
 
-                lettersGuessed = new LettersGuessed();
-                tries = 10;
+        lettersGuessed = new LettersGuessed();
+        tries = 10;
 
-                inGame(word2Guess);
-            } else {
-                console.log('Error connecting to the random word server.  Please try again later :(')
-            }
+        // console.log(words[0]);
+    }
 
-        })
-        .catch(function (error) {
-            if (error.response) {
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
-            } else if (error.request) {
-                console.log(error.request);
-            } else {
-                console.log("Error", error.message);
-            }
-            console.log(error.config);
-        });
-}
-
-
-function inGame(word2Guess) {
     console.log('');
     console.log(word2Guess.word());
     inquirer
@@ -78,9 +60,9 @@ function inGame(word2Guess) {
                     var reg = /^[a-zA-Z]+$/
                     if (charGuessed.length > 1) {
                         return 'Guess only one letter!'
-                    } else if (!reg.test(charGuessed)) {
+                    } else if (!reg.test(charGuessed)){
                         return 'Guess letters only!'
-                    } else if (lettersGuessed.didGuess(charGuessed)) {
+                    }  else if (lettersGuessed.didGuess(charGuessed)) {
                         return 'Letter guessed already!'
                     } else {
                         return true;
@@ -91,11 +73,14 @@ function inGame(word2Guess) {
         .then(function (userGuess) {
             var gotOne = word2Guess.guess(userGuess.letter.toLowerCase());
 
-            if (word2Guess.word() === word2Guess.correctWord) var gotWord = true
-            else var gotWord = false
+            let gotWord = true;
+            word2Guess.letters.forEach(function (letters) {
+                if (!letters.guessedLetter) {
+                    gotWord = false;
+                }
+            })
 
             if ((gotWord) || (tries === 1)) {
-
                 if (gotWord) {
                     console.log('');
                     console.log(word2Guess.word());
@@ -105,7 +90,7 @@ function inGame(word2Guess) {
                 } else {
                     line();
                     console.log('** You lost :(');
-                    console.log('** The word was "' + word2Guess.correctWord + '"');
+                    console.log('** The word was "' + words[0] + '"');
                     line();
                 }
 
@@ -120,21 +105,28 @@ function inGame(word2Guess) {
                         }
                     ])
                     .then(function (response) {
-                        if (response.playAgain) playGame(word2Guess)
+                        if (response.playAgain) {
+                            startGame = true;
+                            playGame(word2Guess)
+                        }
                     })
 
             } else {
                 if (!gotOne) {
                     tries--;
-                    if (tries === 1) var tryWord = ' try'
-                    else var tryWord = ' tries'
-
+                    if (tries === 1) {
+                        var tryWord = ' try'
+                    } else {
+                        var tryWord = ' tries'
+                    }
                     console.log('Letter not found.  You have ' + tries + tryWord + ' left');
                 }
-                inGame(word2Guess);
+                playGame(word2Guess);
             }
         })
+
 }
+
 
 
 function line(numStars) {

@@ -2,6 +2,7 @@ let letter = require("./letter.js");
 
 exports.Word = function(word) {
     this.letters = [],
+    this.correctWord = word,     //Put in here to show if the person gets the word wrong.
     this.init = function(word) {
         for(let x=0; x < word.length; x++) {
             let newLetter = new letter.Letter();

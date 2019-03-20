@@ -1,5 +1,6 @@
 require("dotenv").config();
 let word = require("./word.js");
+let LettersGuessed = require('./lettersGuessed.js')
 let axios = require("axios");
 let inquirer = require("inquirer");
 
@@ -8,21 +9,6 @@ var word2Guess;
 var lettersGuessed;
 var randomWordApiKey = process.env.RANDOM_WORD_KEY;
 
-LettersGuessed = function () {
-    this.letters = [],
-    this.didGuess = function (letter) {
-        let alreadyGuessed = false
-        this.letters.forEach(function (guessed) {
-            if (letter === guessed) {
-                alreadyGuessed = true;
-            }
-        })
-        if (!alreadyGuessed) {
-            this.letters.push(letter);
-        }
-        return alreadyGuessed;
-    }
-}
 
 console.log('');
 line();
@@ -41,7 +27,7 @@ function playGame(word2Guess) {
             if (words.data[0] != "") {
                 word2Guess = new word.Word(words.data[0].toLowerCase());
 
-                lettersGuessed = new LettersGuessed();
+                lettersGuessed = new LettersGuessed.LettersGuessed();
                 tries = 10;
 
                 inGame(word2Guess);
@@ -94,7 +80,12 @@ function inGame(word2Guess) {
             if (word2Guess.word() === word2Guess.correctWord) var gotWord = true
             else var gotWord = false
 
-            if ((gotWord) || (tries === 1)) {
+            if (!gotOne) {
+                tries--;
+            }
+
+
+            if ((gotWord) || (tries === 0)) {
 
                 if (gotWord) {
                     console.log('');
@@ -125,7 +116,6 @@ function inGame(word2Guess) {
 
             } else {
                 if (!gotOne) {
-                    tries--;
                     if (tries === 1) var tryWord = ' try'
                     else var tryWord = ' tries'
 
